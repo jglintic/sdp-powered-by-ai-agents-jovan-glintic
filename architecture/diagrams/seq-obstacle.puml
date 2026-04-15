@@ -1,0 +1,29 @@
+@startuml seq-obstacle
+title Scenario 2: Obstacle Encountered
+
+actor User
+participant Main
+participant InputParser
+participant MissionControl
+participant Rover
+participant Grid
+participant OutputFormatter
+
+User -> Main : run("0 0 N", "5 5", "0 1", "MM")
+Main -> InputParser : parse(input)
+InputParser --> Main : rover(0,0,N), grid(5x5, obstacle@(0,1)), commands[M,M]
+
+Main -> MissionControl : execute(rover, grid, commands)
+
+MissionControl -> Rover : execute(M, grid)
+Rover -> Rover : nextPosition = (0,1)
+Rover -> Grid : isObstacle((0,1))
+Grid --> Rover : true
+Rover --> MissionControl : ObstacleException(currentPosition=(0,0))
+
+MissionControl --> Main : halted at (0,0,N)
+Main -> OutputFormatter : formatObstacle(rover)
+OutputFormatter --> Main : "O:0:0:N"
+Main -> User : print("O:0:0:N")
+
+@enduml

@@ -1,17 +1,12 @@
 @startuml c4-context
-
-' C4-PlantUML include
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-Person(user, "User", "Provides commands and reads rover state")
+title System Context — Mars Rover
 
-System(system, "Mars Rover Simulator", "Simulates rover movement on a grid with obstacles")
+Person(user, "User", "Provides rover config and command sequence via console")
+System(rover, "Mars Rover System", "Simulates rover movement on a grid; returns final position/direction or obstacle report")
 
-System_Ext(cli, "CLI / Interface", "Command-line or test interface")
-
-Rel(user, cli, "Inputs commands")
-Rel(cli, system, "Sends commands to rover")
-Rel(system, cli, "Returns final position and status")
-Rel(cli, user, "Displays results")
+Rel(user, rover, "Inputs: start position, direction, grid size, obstacles, commands", "stdin")
+Rel(rover, user, "Outputs: final position + direction or obstacle report", "stdout")
 
 @enduml

@@ -1,0 +1,36 @@
+@startuml seq-happy-path
+title Scenario 1: Successful Command Execution
+
+actor User
+participant Main
+participant InputParser
+participant MissionControl
+participant Rover
+participant Grid
+participant OutputFormatter
+
+User -> Main : run("0 0 N", "5 5", "", "MRML")
+Main -> InputParser : parse(input)
+InputParser --> Main : rover(0,0,N), grid(5x5, no obstacles), commands[M,R,M,L]
+
+Main -> MissionControl : execute(rover, grid, commands)
+
+loop for each command
+    MissionControl -> Rover : execute(command, grid)
+    alt command == M
+        Rover -> Rover : nextPosition = position.translate(direction)
+        Rover -> Grid : isObstacle(nextPosition)
+        Grid --> Rover : false
+        Rover -> Rover : position = nextPosition
+    else command == L or R
+        Rover -> Rover : direction = direction.rotate(command)
+    end
+    Rover --> MissionControl : ok
+end
+
+MissionControl --> Main : rover(1,1,N)
+Main -> OutputFormatter : format(rover)
+OutputFormatter --> Main : "1:1:N"
+Main -> User : print("1:1:N")
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml c4-component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component View — Mars Rover App
+
+Person(user, "User")
+
+Container_Boundary(app, "Mars Rover App") {
+    Component(main, "Main", "Java class", "Entry point; wires and launches the app")
+    Component(parser, "InputParser", "Java class", "Parses stdin into domain objects")
+    Component(formatter, "OutputFormatter", "Java class", "Formats result for stdout")
+    Component(mission, "MissionControl", "Java class", "Iterates commands; orchestrates rover execution")
+    Component(rover, "Rover", "Java class", "Holds position + direction; applies commands")
+    Component(grid, "Grid", "Java class", "Holds dimensions and obstacles; validates moves")
+    Component(direction, "Direction", "Java enum", "N/E/S/W with dx/dy deltas and rotation logic")
+    Component(position, "Position", "Java record", "Immutable (x,y) value object with wrap logic")
+    Component(command, "Command", "Java enum", "L, R, M")
+}
+
+Rel(user, main, "Runs")
+Rel(main, parser, "Uses")
+Rel(main, formatter, "Uses")
+Rel(main, mission, "Creates and calls")
+Rel(mission, rover, "Sends commands to")
+Rel(mission, grid, "Passes to rover for validation")
+Rel(rover, grid, "Validates next position")
+Rel(rover, direction, "Uses for rotation and delta")
+Rel(rover, position, "Updates")
+Rel(grid, position, "Checks obstacle set")
+Rel(parser, command, "Produces")
+Rel(parser, rover, "Produces initial state")
+Rel(parser, grid, "Produces")
+
+@enduml
