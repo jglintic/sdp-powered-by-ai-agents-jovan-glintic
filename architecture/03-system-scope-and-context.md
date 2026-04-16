@@ -17,4 +17,4 @@ All input is read from `stdin` and all output is written to `stdout`. The entire
 
 ## 3.3 C4 System Context Diagram
 
-See [`diagrams/c4-context.puml`](diagrams/c4-context.puml).
+See [`diagrams/c4-context.svg`](diagrams/c4-context.svg).

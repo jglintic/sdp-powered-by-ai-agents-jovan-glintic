@@ -12,7 +12,7 @@ The Mars Rover system is a single JVM process executed from the command line. Th
 | JVM process | Single process; launched via `java -jar` or `mvn exec:java` |
 | stdin / stdout | Sole I/O channels; no files, sockets, or databases |
 
-See [`diagrams/deployment.puml`](diagrams/deployment.puml).
+See [`diagrams/deployment.svg`](diagrams/deployment.svg).
 
 ## 7.3 Build and Run
 
