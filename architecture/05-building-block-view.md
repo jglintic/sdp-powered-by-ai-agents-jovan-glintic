@@ -4,7 +4,7 @@
 
 The system is a single Java process. There are no separate containers (no server, no database).
 
-See [`diagrams/c4-container.puml`](diagrams/c4-container.puml).
+See [`diagrams/c4-container.svg`](diagrams/c4-container.svg).
 
 ## 5.2 Level 2 — Component View
 
@@ -31,7 +31,7 @@ The single container is decomposed into three packages:
 | `Direction` | Enum: `N, E, S, W`; knows `(dx, dy)` and rotation |
 | `Command` | Enum: `L, R, M` |
 
-See [`diagrams/c4-component.puml`](diagrams/c4-component.puml).
+See [`diagrams/c4-component.svg`](diagrams/c4-component.svg).
 
 ## 5.3 Key Relationships
 
