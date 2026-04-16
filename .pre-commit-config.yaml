@@ -63,3 +63,13 @@ repos:
         language: system
         files: '\.puml$'
         pass_filenames: false
+
+  # Docker
+  - repo: local
+    hooks:
+      - id: docker-test
+        name: Docker test
+        entry: bash scripts/hooks/docker-test.sh
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
