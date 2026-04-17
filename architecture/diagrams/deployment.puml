@@ -1,0 +1,16 @@
+@startuml deployment
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
+
+title Deployment View — Mars Rover
+
+Deployment_Node(workstation, "Developer Workstation", "Any OS, JDK 17+") {
+    Deployment_Node(jvm, "JVM Process", "Java 17") {
+        Container(app, "Mars Rover App", "Java, JAR", "Parses input, executes commands, prints result")
+    }
+}
+
+Person(user, "User")
+Rel(user, app, "stdin: commands", "console")
+Rel(app, user, "stdout: result", "console")
+
+@enduml

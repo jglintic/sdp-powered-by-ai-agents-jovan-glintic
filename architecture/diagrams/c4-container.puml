@@ -1,0 +1,15 @@
+@startuml c4-container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container View — Mars Rover
+
+Person(user, "User", "Provides commands via console")
+
+System_Boundary(rover_system, "Mars Rover System") {
+    Container(app, "Mars Rover App", "Java, Console", "Parses input, executes commands, returns final rover state")
+}
+
+Rel(user, app, "Sends commands", "stdin")
+Rel(app, user, "Returns result", "stdout")
+
+@enduml
