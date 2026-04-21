@@ -104,3 +104,16 @@ def test_rover_be_002_1_s2_mission_control_stops_on_obstacle_and_returns_halted_
     assert result == (0, 0, Direction.N, True)
     assert rover.x == 0
     assert rover.y == 0
+
+
+def test_rover_be_002_1_s3_move_to_non_obstacle_cell_succeeds():
+    # GIVEN
+    grid = Grid(5, 5, obstacles=frozenset({(0, 2)}))
+    rover = Rover(x=0, y=0, direction=Direction.N)
+
+    # WHEN
+    rover.execute(Command.M, grid)
+
+    # THEN
+    assert rover.x == 0
+    assert rover.y == 1
