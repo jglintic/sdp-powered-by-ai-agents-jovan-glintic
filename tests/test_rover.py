@@ -1,4 +1,13 @@
-from mars_rover.domain import Command, Direction, Grid, MissionControl, Rover
+import pytest
+
+from mars_rover.domain import (
+    Command,
+    Direction,
+    Grid,
+    MissionControl,
+    ObstacleError,
+    Rover,
+)
 
 
 def test_rover_be_001_1_s1_move_forward_updates_position_to_0_1():
@@ -67,3 +76,16 @@ def test_rover_be_001_1_s4_empty_command_list_leaves_rover_unchanged():
     assert rover.x == 3
     assert rover.y == 3
     assert rover.direction == Direction.S
+
+
+def test_rover_be_002_1_s1_move_into_obstacle_raises_exception_and_position_unchanged():
+    # GIVEN
+    grid = Grid(5, 5, obstacles=frozenset({(0, 1)}))
+    rover = Rover(x=0, y=0, direction=Direction.N)
+
+    # WHEN / THEN
+    with pytest.raises(ObstacleError):
+        rover.execute(Command.M, grid)
+
+    assert rover.x == 0
+    assert rover.y == 0
