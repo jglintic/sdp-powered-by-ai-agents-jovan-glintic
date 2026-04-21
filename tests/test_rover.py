@@ -89,3 +89,18 @@ def test_rover_be_002_1_s1_move_into_obstacle_raises_exception_and_position_unch
 
     assert rover.x == 0
     assert rover.y == 0
+
+
+def test_rover_be_002_1_s2_mission_control_stops_on_obstacle_and_returns_halted_state():
+    # GIVEN
+    grid = Grid(5, 5, obstacles=frozenset({(0, 1)}))
+    rover = Rover(x=0, y=0, direction=Direction.N)
+    mission = MissionControl(rover, grid)
+
+    # WHEN
+    result = mission.execute([Command.M, Command.M])
+
+    # THEN
+    assert result == (0, 0, Direction.N, True)
+    assert rover.x == 0
+    assert rover.y == 0

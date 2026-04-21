@@ -65,4 +65,8 @@ class MissionControl:
 
     def execute(self, commands: list[Command]):
         for command in commands:
-            self.rover.execute(command, self.grid)
+            try:
+                self.rover.execute(command, self.grid)
+            except ObstacleError:
+                return (self.rover.x, self.rover.y, self.rover.direction, True)
+        return (self.rover.x, self.rover.y, self.rover.direction, False)
