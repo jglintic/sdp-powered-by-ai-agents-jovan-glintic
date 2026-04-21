@@ -117,3 +117,17 @@ def test_rover_be_002_1_s3_move_to_non_obstacle_cell_succeeds():
     # THEN
     assert rover.x == 0
     assert rover.y == 1
+
+
+def test_rover_be_002_1_s4_rover_state_never_partially_updated_on_blocked_move():
+    # GIVEN
+    grid = Grid(5, 5, obstacles=frozenset({(4, 3)}))
+    rover = Rover(x=3, y=3, direction=Direction.E)
+
+    # WHEN / THEN
+    with pytest.raises(ObstacleError):
+        rover.execute(Command.M, grid)
+
+    assert rover.x == 3
+    assert rover.y == 3
+    assert rover.direction == Direction.E
