@@ -1,11 +1,15 @@
-def test_rover_initial_position():
-    # GIVEN
-    from rover import Rover
+from mars_rover.domain import Command, Direction, Grid, Rover
 
-    rover = Rover()
+
+def test_rover_be_001_1_s1_move_forward_updates_position_to_0_1():
+    # GIVEN
+    grid = Grid(5, 5)
+    rover = Rover(x=0, y=0, direction=Direction.N)
 
     # WHEN
-    position = rover.get_position()
+    rover.execute(Command.M, grid)
 
     # THEN
-    assert position == (0, 0, "N")
+    assert rover.x == 0
+    assert rover.y == 1
+    assert rover.direction == Direction.N

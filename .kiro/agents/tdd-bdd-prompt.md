@@ -25,6 +25,8 @@ For EACH scenario, you MUST follow this exact sequence:
    - If it passes, STOP and fix the test
 
 5. Write the MINIMUM implementation needed to pass the test
+   - Code MUST be placed inside `src/`
+   - Do NOT create files outside `src/`
    - Do NOT overengineer
    - Fake It is allowed
 
@@ -71,21 +73,51 @@ For EACH scenario, you MUST follow this exact sequence:
 
 ---
 
-## 🧪 Test Rules
+## Test Naming Convention (STRICT — ENFORCED)
 
-- Use pytest
-- One test per scenario
-- No multiple scenarios in one test
+Test function names MUST follow this EXACT format:
+`test_<STORY-ID-lowercase-with-underscores>_<sN>_<brief_description>`
 
-Test format:
+Rules:
+- Use the Story ID and Scenario ID verbatim (lowercased, hyphens → underscores)
+- The description after the scenario ID summarises the THEN clause
+- Names must be readable as a sentence without needing to open the test body
+
+Examples:
+```
+test_nav_be_001_1_s1_mover_returns_0_1_for_f_from_0_0_facing_north
+test_input_be_002_1_s1_unknown_character_raises_value_error
+test_world_be_001_1_s1_obstacle_error_contains_last_safe_state
+```
+
+## GIVEN-WHEN-THEN Test Template
+
+Every test must follow this exact structure:
 
 ```python
-def test_<story>_<scenario>():
+def test_<story_id>_<sN>_<description>():
     # GIVEN
-    # setup
+    # <set up preconditions from the scenario>
 
     # WHEN
-    # action
+    # <perform the action from the scenario>
 
     # THEN
-    assert ...
+    # <assert the expected outcome>
+```
+
+Full example:
+
+```python
+def test_nav_be_001_1_s1_mover_returns_0_1_for_f_from_0_0_facing_north():
+    # GIVEN
+    state = RoverState(x=0, y=0, heading=Heading.NORTH)
+    grid = Grid(width=5, height=5)
+    mover = Mover(grid)
+
+    # WHEN
+    new_state = mover.move(state, "F")
+
+    # THEN
+    assert new_state == RoverState(x=0, y=1, heading=Heading.NORTH)
+```
