@@ -131,3 +131,58 @@ def test_rover_be_002_1_s4_rover_state_never_partially_updated_on_blocked_move()
     assert rover.x == 3
     assert rover.y == 3
     assert rover.direction == Direction.E
+
+
+def test_grid_001_1_s1_move_south_from_y0_wraps_to_y4():
+    # GIVEN
+    grid = Grid(5, 5)
+    rover = Rover(x=0, y=0, direction=Direction.S)
+    # WHEN
+    rover.execute(Command.M, grid)
+    # THEN
+    assert rover.x == 0
+    assert rover.y == 4
+
+
+def test_grid_001_1_s2_move_east_from_x4_wraps_to_x0():
+    # GIVEN
+    grid = Grid(5, 5)
+    rover = Rover(x=4, y=2, direction=Direction.E)
+    # WHEN
+    rover.execute(Command.M, grid)
+    # THEN
+    assert rover.x == 0
+    assert rover.y == 2
+
+
+def test_grid_001_1_s3_move_north_from_y4_wraps_to_y0():
+    # GIVEN
+    grid = Grid(5, 5)
+    rover = Rover(x=2, y=4, direction=Direction.N)
+    # WHEN
+    rover.execute(Command.M, grid)
+    # THEN
+    assert rover.x == 2
+    assert rover.y == 0
+
+
+def test_grid_001_1_s4_move_west_from_x0_wraps_to_x4():
+    # GIVEN
+    grid = Grid(5, 5)
+    rover = Rover(x=0, y=3, direction=Direction.W)
+    # WHEN
+    rover.execute(Command.M, grid)
+    # THEN
+    assert rover.x == 4
+    assert rover.y == 3
+
+
+def test_grid_001_1_s5_move_within_bounds_no_wrap():
+    # GIVEN
+    grid = Grid(5, 5)
+    rover = Rover(x=2, y=2, direction=Direction.N)
+    # WHEN
+    rover.execute(Command.M, grid)
+    # THEN
+    assert rover.x == 2
+    assert rover.y == 3
