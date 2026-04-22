@@ -1,3 +1,6 @@
+import subprocess  # nosec B404
+from pathlib import Path
+
 import pytest
 
 from mars_rover.domain import (
@@ -8,6 +11,7 @@ from mars_rover.domain import (
     ObstacleError,
     Rover,
 )
+from mars_rover.input_parser import InputParser
 
 
 def test_rover_be_001_1_s1_move_forward_updates_position_to_0_1():
@@ -186,3 +190,70 @@ def test_grid_001_1_s5_move_within_bounds_no_wrap():
     # THEN
     assert rover.x == 2
     assert rover.y == 3
+
+
+# --- InputParser tests ---
+
+
+def test_cmd_be_001_1_s1_parse_position_line_returns_rover():
+    rover = InputParser.parse_rover("0 0 N")
+    assert rover.x == 0
+    assert rover.y == 0
+    assert rover.direction == Direction.N
+
+
+def test_cmd_be_001_1_s2_parse_grid_line_returns_grid():
+    grid = InputParser.parse_grid("5 5")
+    assert grid.width == 5
+    assert grid.height == 5
+    assert grid.obstacles == frozenset()
+
+
+def test_cmd_be_001_1_s3_parse_obstacle_line_returns_frozenset():
+    obstacles = InputParser.parse_obstacles("0 1 2 3")
+    assert obstacles == frozenset({(0, 1), (2, 3)})
+
+
+def test_cmd_be_001_1_s4_parse_command_string_returns_list():
+    commands = InputParser.parse_commands("MRML")
+    assert commands == [Command.M, Command.R, Command.M, Command.L]
+
+
+def test_cmd_be_001_1_s5_unknown_command_raises_value_error():
+    with pytest.raises(ValueError, match="Invalid command: X"):
+        InputParser.parse_commands("MXL")
+
+
+def test_cmd_be_003_1_s1_unknown_direction_raises_value_error():
+    with pytest.raises(ValueError, match="Invalid direction: X"):
+        InputParser.parse_rover("0 0 X")
+
+
+# --- Main (__main__) tests ---
+
+
+def run_main(stdin_text: str):
+    import os
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(Path(__file__).parent.parent / "src")
+    return subprocess.run(  # nosec B404 B603 B607
+        ["python", "-m", "mars_rover"],
+        input=stdin_text,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
+def test_cmd_fe_001_1_s1_main_runs_simulation_and_prints_result():
+    result = run_main("0 0 N\n5 5\n\nMRML\n")
+    assert result.stdout.strip() == "1:1:N"
+    assert result.returncode == 0
+
+
+def test_cmd_fe_001_1_s2_main_writes_error_to_stderr_on_invalid_direction():
+    result = run_main("0 0 X\n5 5\n\nM\n")
+    assert result.stderr.strip() == "Invalid direction: X"
+    assert result.stdout == ""
+    assert result.returncode != 0
