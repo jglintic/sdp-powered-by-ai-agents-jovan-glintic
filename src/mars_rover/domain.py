@@ -15,9 +15,16 @@ class Direction(Enum):
     def dy(self):
         return self.value[1]
 
+    def rotate(self, command: "Command") -> "Direction":
+        directions = list(Direction)
+        delta = 1 if command == Command.R else -1
+        return directions[(directions.index(self) + delta) % 4]
+
 
 class Command(Enum):
     M = "M"
+    L = "L"
+    R = "R"
 
 
 class Grid:
@@ -36,3 +43,15 @@ class Rover:
         if command == Command.M:
             self.x = (self.x + self.direction.dx) % grid.width
             self.y = (self.y + self.direction.dy) % grid.height
+        elif command in (Command.L, Command.R):
+            self.direction = self.direction.rotate(command)
+
+
+class MissionControl:
+    def __init__(self, rover: Rover, grid: Grid):
+        self.rover = rover
+        self.grid = grid
+
+    def execute(self, commands: list[Command]):
+        for command in commands:
+            self.rover.execute(command, self.grid)
