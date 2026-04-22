@@ -20,11 +20,16 @@ class Direction(Enum):
         delta = 1 if command == Command.R else -1
         return directions[(directions.index(self) + delta) % 4]
 
+    def opposite(self) -> "Direction":
+        directions = list(Direction)
+        return directions[(directions.index(self) + 2) % 4]
+
 
 class Command(Enum):
     M = "M"
     L = "L"
     R = "R"
+    B = "B"
 
 
 class ObstacleError(Exception):
@@ -48,9 +53,10 @@ class Rover:
         self.direction = direction
 
     def execute(self, command: Command, grid: Grid):
-        if command == Command.M:
-            nx = (self.x + self.direction.dx) % grid.width
-            ny = (self.y + self.direction.dy) % grid.height
+        if command in (Command.M, Command.B):
+            d = self.direction if command == Command.M else self.direction.opposite()
+            nx = (self.x + d.dx) % grid.width
+            ny = (self.y + d.dy) % grid.height
             if grid.is_obstacle(nx, ny):
                 raise ObstacleError()
             self.x, self.y = nx, ny
