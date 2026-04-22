@@ -27,10 +27,18 @@ class Command(Enum):
     R = "R"
 
 
+class ObstacleError(Exception):
+    pass
+
+
 class Grid:
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, obstacles: frozenset = frozenset()):
         self.width = width
         self.height = height
+        self.obstacles = obstacles
+
+    def is_obstacle(self, x: int, y: int) -> bool:
+        return (x, y) in self.obstacles
 
 
 class Rover:
@@ -41,8 +49,11 @@ class Rover:
 
     def execute(self, command: Command, grid: Grid):
         if command == Command.M:
-            self.x = (self.x + self.direction.dx) % grid.width
-            self.y = (self.y + self.direction.dy) % grid.height
+            nx = (self.x + self.direction.dx) % grid.width
+            ny = (self.y + self.direction.dy) % grid.height
+            if grid.is_obstacle(nx, ny):
+                raise ObstacleError()
+            self.x, self.y = nx, ny
         elif command in (Command.L, Command.R):
             self.direction = self.direction.rotate(command)
 
@@ -54,4 +65,8 @@ class MissionControl:
 
     def execute(self, commands: list[Command]):
         for command in commands:
-            self.rover.execute(command, self.grid)
+            try:
+                self.rover.execute(command, self.grid)
+            except ObstacleError:
+                return (self.rover.x, self.rover.y, self.rover.direction, True)
+        return (self.rover.x, self.rover.y, self.rover.direction, False)
