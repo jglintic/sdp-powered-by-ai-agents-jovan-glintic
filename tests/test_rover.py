@@ -257,3 +257,51 @@ def test_cmd_fe_001_1_s2_main_writes_error_to_stderr_on_invalid_direction():
     assert result.stderr.strip() == "Invalid direction: X"
     assert result.stdout == ""
     assert result.returncode != 0
+
+
+# --- ROVER-STORY-004: extensible command set (B = move backward) ---
+
+
+def test_rover_be_004_1_direction_opposite_n_returns_s():
+    assert Direction.N.opposite() == Direction.S
+
+
+def test_rover_be_004_1_s1_command_b_exists():
+    assert Command.B is not None
+
+
+def test_rover_be_004_1_s2_b_moves_rover_opposite_to_direction():
+    grid = Grid(5, 5)
+    rover = Rover(x=2, y=2, direction=Direction.N)
+    rover.execute(Command.B, grid)
+    assert rover.x == 2
+    assert rover.y == 1
+    assert rover.direction == Direction.N
+
+
+def test_rover_be_004_1_s3_b_raises_obstacle_error_and_state_unchanged():
+    grid = Grid(5, 5, obstacles=frozenset({(2, 1)}))
+    rover = Rover(x=2, y=2, direction=Direction.N)
+    with pytest.raises(ObstacleError):
+        rover.execute(Command.B, grid)
+    assert rover.x == 2
+    assert rover.y == 2
+
+
+def test_rover_be_004_1_s4_b_wraps_at_grid_edge():
+    grid = Grid(5, 5)
+    rover = Rover(x=0, y=0, direction=Direction.N)
+    rover.execute(Command.B, grid)
+    assert rover.x == 0
+    assert rover.y == 4
+
+
+def test_rover_be_004_1_s5_input_parser_accepts_b():
+    commands = InputParser.parse_commands("B")
+    assert commands == [Command.B]
+
+
+def test_rover_fe_004_1_s1_b_command_moves_backward_via_stdin():
+    result = run_main("2 2 N\n5 5\n\nB\n")
+    assert result.stdout.strip() == "2:1:N"
+    assert result.returncode == 0
