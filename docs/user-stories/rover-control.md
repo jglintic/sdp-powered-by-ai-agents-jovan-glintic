@@ -141,81 +141,86 @@ SO THAT the Rover's position and direction are correctly updated after every ste
 
 ### 4. Infrastructure Story — ROVER-INFRA-001.1
 
-**Focus:** Execution model, in-memory state, observability
+**Focus:** Docker build, pytest execution, in-memory state, observability
 
 ```
 AS A developer running the kata
-I WANT the rover simulation to execute as a single JVM process reading from stdin and writing to stdout
-SO THAT the system requires no external infrastructure and can be run and tested from the command line
+I WANT the rover simulation to build and run inside a Docker container using pytest
+SO THAT the system requires no local Python installation and tests are fully reproducible
 ```
 
-#### SCENARIO 1: Application wires domain objects and runs end-to-end
+#### SCENARIO 1: Docker image builds successfully
 
 **Scenario ID:** ROVER-INFRA-001.1-S1
 
 **GIVEN**
-* a JDK 17+ environment
-* the application JAR is built via `mvn package`
+* a `Dockerfile` at the project root using `python:3.12-slim`
+* source files under `src/` and tests under `tests/`
 
 **WHEN**
-* the user runs `java -jar target/mars-rover.jar` and provides valid input
+* the developer runs:
+  ```
+  docker build -t mars-rover .
+  ```
 
 **THEN**
-* `Main` instantiates `InputParser`, `MissionControl`, and `OutputFormatter`
-* `MissionControl` holds `Rover` and `Grid` in memory for the duration of the run
-* the result string is written to stdout
-* no files, databases, or network calls are made
+* the image is built without errors
+* `pytest` is installed inside the image via `pip install --no-cache-dir pytest`
 
 ---
 
-#### SCENARIO 2: In-memory state is isolated per run
+#### SCENARIO 2: pytest runs inside the container and all tests pass
 
 **Scenario ID:** ROVER-INFRA-001.1-S2
 
 **GIVEN**
-* the application is executed twice in sequence
+* the `mars-rover` image has been built
+* `tests/test_rover.py` contains tests for `Rover`, `Direction`, `Position`, and `MissionControl`
 
 **WHEN**
-* each run receives different input
+* the developer runs:
+  ```
+  docker run --rm mars-rover pytest tests/
+  ```
 
 **THEN**
-* each run produces an independent result
-* no state is shared between runs (no static fields, no files)
+* pytest discovers and executes all tests
+* all tests pass; exit code is `0`
+* test results are printed to stdout
 
 ---
 
-#### SCENARIO 3: Errors are written to stderr, not stdout
+#### SCENARIO 3: In-memory state is isolated per container run
 
 **Scenario ID:** ROVER-INFRA-001.1-S3
 
 **GIVEN**
-* the application receives malformed input
+* the container is run twice with different inputs
 
 **WHEN**
-* `InputParser` throws `IllegalArgumentException`
+* each `docker run` invocation executes independently
 
 **THEN**
-* `Main` catches the exception and writes the error message to `stderr`
-* `stdout` remains empty
-* the process exits with a non-zero code
+* each run produces an independent result
+* no state persists between runs (no files, no shared volumes)
 
 ---
 
 #### Data Model
-- `Rover`: holds `Position` (record) and `Direction` (enum) — replaced on each successful move
-- `Grid`: holds `int width`, `int height`, `Set<Position> obstacles` — read-only after construction
+- `Rover`: holds `position` (tuple or dataclass) and `direction` (enum) — replaced on each successful move
+- `Grid`: holds `width`, `height`, `obstacles` (frozenset) — read-only after construction
 - `MissionControl`: holds references to `Rover` and `Grid` — scoped to a single execution
 
 #### Execution Model
-- CLI: `java -jar target/mars-rover.jar`
-- Single JVM process; stdin → parse → execute → format → stdout
-- Build: `mvn package` / `mvn test`
+- Build: `docker build -t mars-rover .`
+- Test: `docker run --rm mars-rover pytest tests/`
+- Run: `docker run --rm -i mars-rover python -m mars_rover` (reads from stdin)
+- All state is in-memory; no files, databases, or network calls
 
 #### Observability
-- No logging framework (§8.3)
 - Normal result → `stdout`
 - Errors → `stderr`
-- Each command step is a traceable method call on `Rover` (unit-testable in isolation)
+- pytest output provides per-test pass/fail visibility
 
 ---
 
