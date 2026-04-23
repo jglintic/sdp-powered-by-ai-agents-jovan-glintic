@@ -19,9 +19,19 @@ class InputParser:
     @staticmethod
     def parse_obstacles(line: str) -> frozenset:
         tokens = line.split()
+        if len(tokens) % 2 != 0:
+            raise ValueError("Obstacle coordinates must be provided in x y pairs")
         return frozenset(
             (int(tokens[i]), int(tokens[i + 1])) for i in range(0, len(tokens), 2)
         )
+
+    @staticmethod
+    def validate_position(x: int, y: int, grid: Grid) -> None:
+        if not (0 <= x < grid.width and 0 <= y < grid.height):
+            raise ValueError(
+                f"Starting position ({x}, {y}) is outside grid "
+                f"{grid.width}x{grid.height}"
+            )
 
     @staticmethod
     def parse_commands(line: str) -> list:
