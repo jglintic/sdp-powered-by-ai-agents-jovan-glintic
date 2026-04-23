@@ -141,8 +141,10 @@ def test_grid_001_1_s1_move_south_from_y0_wraps_to_y4():
     # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=0, y=0, direction=Direction.S)
+
     # WHEN
     rover.execute(Command.M, grid)
+
     # THEN
     assert rover.x == 0
     assert rover.y == 4
@@ -152,8 +154,10 @@ def test_grid_001_1_s2_move_east_from_x4_wraps_to_x0():
     # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=4, y=2, direction=Direction.E)
+
     # WHEN
     rover.execute(Command.M, grid)
+
     # THEN
     assert rover.x == 0
     assert rover.y == 2
@@ -163,8 +167,10 @@ def test_grid_001_1_s3_move_north_from_y4_wraps_to_y0():
     # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=2, y=4, direction=Direction.N)
+
     # WHEN
     rover.execute(Command.M, grid)
+
     # THEN
     assert rover.x == 2
     assert rover.y == 0
@@ -174,8 +180,10 @@ def test_grid_001_1_s4_move_west_from_x0_wraps_to_x4():
     # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=0, y=3, direction=Direction.W)
+
     # WHEN
     rover.execute(Command.M, grid)
+
     # THEN
     assert rover.x == 4
     assert rover.y == 3
@@ -185,8 +193,10 @@ def test_grid_001_1_s5_move_within_bounds_no_wrap():
     # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=2, y=2, direction=Direction.N)
+
     # WHEN
     rover.execute(Command.M, grid)
+
     # THEN
     assert rover.x == 2
     assert rover.y == 3
@@ -196,35 +206,49 @@ def test_grid_001_1_s5_move_within_bounds_no_wrap():
 
 
 def test_cmd_be_001_1_s1_parse_position_line_returns_rover():
+    # GIVEN / WHEN
     rover = InputParser.parse_rover("0 0 N")
+
+    # THEN
     assert rover.x == 0
     assert rover.y == 0
     assert rover.direction == Direction.N
 
 
 def test_cmd_be_001_1_s2_parse_grid_line_returns_grid():
+    # GIVEN / WHEN
     grid = InputParser.parse_grid("5 5")
+
+    # THEN
     assert grid.width == 5
     assert grid.height == 5
     assert grid.obstacles == frozenset()
 
 
 def test_cmd_be_001_1_s3_parse_obstacle_line_returns_frozenset():
+    # GIVEN / WHEN
     obstacles = InputParser.parse_obstacles("0 1 2 3")
+
+    # THEN
     assert obstacles == frozenset({(0, 1), (2, 3)})
 
 
 def test_cmd_be_001_1_s4_parse_command_string_returns_list():
+    # GIVEN / WHEN
     commands = InputParser.parse_commands("MRML")
+
+    # THEN
     assert commands == [Command.M, Command.R, Command.M, Command.L]
 
 
 def test_cmd_be_001_1_s5_unknown_command_raises_value_error():
+    # GIVEN / WHEN / THEN
     with pytest.raises(ValueError, match="Invalid command: X"):
         InputParser.parse_commands("MXL")
 
 
 def test_cmd_be_003_1_s1_unknown_direction_raises_value_error():
+    # GIVEN / WHEN / THEN
     with pytest.raises(ValueError, match="Invalid direction: X"):
         InputParser.parse_rover("0 0 X")
 
@@ -247,13 +271,19 @@ def run_main(stdin_text: str):
 
 
 def test_cmd_fe_001_1_s1_main_runs_simulation_and_prints_result():
+    # GIVEN / WHEN
     result = run_main("0 0 N\n5 5\n\nMRML\n")
+
+    # THEN
     assert result.stdout.strip() == "1:1:N"
     assert result.returncode == 0
 
 
 def test_cmd_fe_001_1_s2_main_writes_error_to_stderr_on_invalid_direction():
+    # GIVEN / WHEN
     result = run_main("0 0 X\n5 5\n\nM\n")
+
+    # THEN
     assert result.stderr.strip() == "Invalid direction: X"
     assert result.stdout == ""
     assert result.returncode != 0
@@ -263,46 +293,68 @@ def test_cmd_fe_001_1_s2_main_writes_error_to_stderr_on_invalid_direction():
 
 
 def test_rover_be_004_1_direction_opposite_n_returns_s():
+    # GIVEN / WHEN / THEN
     assert Direction.N.opposite() == Direction.S
 
 
 def test_rover_be_004_1_s1_command_b_exists():
+    # GIVEN / WHEN / THEN
     assert Command.B is not None
 
 
 def test_rover_be_004_1_s2_b_moves_rover_opposite_to_direction():
+    # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=2, y=2, direction=Direction.N)
+
+    # WHEN
     rover.execute(Command.B, grid)
+
+    # THEN
     assert rover.x == 2
     assert rover.y == 1
     assert rover.direction == Direction.N
 
 
 def test_rover_be_004_1_s3_b_raises_obstacle_error_and_state_unchanged():
+    # GIVEN
     grid = Grid(5, 5, obstacles=frozenset({(2, 1)}))
     rover = Rover(x=2, y=2, direction=Direction.N)
+
+    # WHEN / THEN
     with pytest.raises(ObstacleError):
         rover.execute(Command.B, grid)
+
     assert rover.x == 2
     assert rover.y == 2
 
 
 def test_rover_be_004_1_s4_b_wraps_at_grid_edge():
+    # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=0, y=0, direction=Direction.N)
+
+    # WHEN
     rover.execute(Command.B, grid)
+
+    # THEN
     assert rover.x == 0
     assert rover.y == 4
 
 
 def test_rover_be_004_1_s5_input_parser_accepts_b():
+    # GIVEN / WHEN
     commands = InputParser.parse_commands("B")
+
+    # THEN
     assert commands == [Command.B]
 
 
 def test_rover_fe_004_1_s1_b_command_moves_backward_via_stdin():
+    # GIVEN / WHEN
     result = run_main("2 2 N\n5 5\n\nB\n")
+
+    # THEN
     assert result.stdout.strip() == "2:1:N"
     assert result.returncode == 0
 
@@ -311,12 +363,16 @@ def test_rover_fe_004_1_s1_b_command_moves_backward_via_stdin():
 
 
 def test_grid_infra_003_1_s2_odd_obstacle_tokens_raises_value_error():
+    # GIVEN / WHEN / THEN
     with pytest.raises(ValueError, match="pairs"):
         InputParser.parse_obstacles("0 1 2")
 
 
 def test_grid_infra_003_1_s3_duplicate_obstacle_coords_deduplicated():
+    # GIVEN / WHEN
     obstacles = InputParser.parse_obstacles("0 1 0 1")
+
+    # THEN
     assert obstacles == frozenset({(0, 1)})
 
 
@@ -324,8 +380,11 @@ def test_grid_infra_003_1_s3_duplicate_obstacle_coords_deduplicated():
 
 
 def test_grid_infra_002_1_s1_starting_position_outside_grid_raises_value_error():
+    # GIVEN
+    grid = InputParser.parse_grid("5 5")
+
+    # WHEN / THEN
     with pytest.raises(ValueError, match="outside grid"):
-        grid = InputParser.parse_grid("5 5")
         InputParser.validate_position(6, 0, grid)
 
 
@@ -333,19 +392,24 @@ def test_grid_infra_002_1_s1_starting_position_outside_grid_raises_value_error()
 
 
 def test_grid_infra_001_1_s1_grid_dimensions_are_read_only():
+    # GIVEN / WHEN
     grid = Grid(5, 5)
+
+    # THEN
     assert not hasattr(grid, "__set__")
-    # width and height are plain int attributes set at construction
     assert grid.width == 5
     assert grid.height == 5
 
 
 def test_grid_infra_001_1_s2_wrap_applied_inside_rover_execute_not_at_call_sites():
-    # Wrap logic lives in Rover.execute via modulo — no call site applies it manually.
-    # Verify: moving off the south edge from (0,0) produces (0,4).
+    # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=0, y=0, direction=Direction.S)
+
+    # WHEN
     rover.execute(Command.M, grid)
+
+    # THEN
     assert rover.y == 4  # wrapped, never stored as -1
 
 
@@ -353,16 +417,25 @@ def test_grid_infra_001_1_s2_wrap_applied_inside_rover_execute_not_at_call_sites
 
 
 def test_cmd_infra_002_1_s1_format_result_returns_string_not_printed():
-    # OutputFormatter logic lives inline in __main__; verify the formula directly.
+    # GIVEN
     x, y, direction, halted = 1, 2, Direction.E, False
+
+    # WHEN
     result = ("O:" if halted else "") + f"{x}:{y}:{direction.name}"
+
+    # THEN
     assert result == "1:2:E"
     assert isinstance(result, str)
 
 
 def test_cmd_infra_002_1_s1_format_halted_result_returns_o_prefixed_string():
+    # GIVEN
     x, y, direction, halted = 0, 0, Direction.N, True
+
+    # WHEN
     result = ("O:" if halted else "") + f"{x}:{y}:{direction.name}"
+
+    # THEN
     assert result == "O:0:0:N"
 
 
@@ -370,14 +443,20 @@ def test_cmd_infra_002_1_s1_format_halted_result_returns_o_prefixed_string():
 
 
 def test_cmd_infra_003_1_s1_invalid_grid_dimension_writes_to_stderr():
+    # GIVEN / WHEN
     result = run_main("0 0 N\n0 5\n\nM\n")
+
+    # THEN
     assert result.returncode != 0
     assert result.stdout == ""
     assert "0" in result.stderr
 
 
 def test_cmd_infra_003_1_s1_out_of_bounds_position_writes_to_stderr():
+    # GIVEN / WHEN
     result = run_main("6 0 N\n5 5\n\nM\n")
+
+    # THEN
     assert result.returncode != 0
     assert result.stdout == ""
     assert "outside grid" in result.stderr
@@ -387,13 +466,18 @@ def test_cmd_infra_003_1_s1_out_of_bounds_position_writes_to_stderr():
 
 
 def test_rover_infra_004_1_s1_b_command_defined_in_command_enum():
+    # GIVEN / WHEN / THEN
     assert hasattr(Command, "B")
 
 
 def test_rover_infra_004_1_s1_mission_control_dispatches_b_without_modification():
-    # MissionControl.execute iterates commands generically; B uses the same loop.
+    # GIVEN
     grid = Grid(5, 5)
     rover = Rover(x=2, y=2, direction=Direction.N)
     mc = MissionControl(rover, grid)
+
+    # WHEN
     mc.execute([Command.B])
+
+    # THEN
     assert rover.y == 1  # moved backward (south)
