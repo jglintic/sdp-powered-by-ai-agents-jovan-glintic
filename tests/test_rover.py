@@ -481,3 +481,25 @@ def test_rover_infra_004_1_s1_mission_control_dispatches_b_without_modification(
 
     # THEN
     assert rover.y == 1  # moved backward (south)
+
+
+# --- Issue #26: E2E test covering full simulation pipeline ---
+
+
+def test_e2e_full_pipeline_turns_moves_wrap_and_obstacle_halt():
+    # GIVEN
+    # Rover starts at (3,0) facing W, grid 5x5, obstacle at (1,3)
+    # Commands: MMLMM
+    #   M  -> W: (3,0)->(2,0)
+    #   M  -> W: (2,0)->(1,0)
+    #   L  -> turn left from W: now facing S
+    #   M  -> S: y wraps (0-1+5)%5=4 -> (1,4)   [WRAP]
+    #   M  -> S: (1,4)->(1,3) blocked by obstacle [HALT]
+    # Expected stdout: O:1:4:S, returncode: 0
+
+    # WHEN
+    result = run_main("3 0 W\n5 5\n1 3\nMMLMM\n")
+
+    # THEN
+    assert result.stdout.strip() == "O:1:4:S"
+    assert result.returncode == 0
