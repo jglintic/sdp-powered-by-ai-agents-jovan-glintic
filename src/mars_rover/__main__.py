@@ -13,6 +13,7 @@ def main():
             InputParser.parse_obstacles(lines[2]) if lines[2].strip() else frozenset()
         )
         grid = Grid(grid_base.width, grid_base.height, obstacles)
+        InputParser.validate_position(rover.x, rover.y, grid)
         commands = InputParser.parse_commands(lines[3])
 
         x, y, direction, halted = MissionControl(rover, grid).execute(commands)

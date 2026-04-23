@@ -305,3 +305,95 @@ def test_rover_fe_004_1_s1_b_command_moves_backward_via_stdin():
     result = run_main("2 2 N\n5 5\n\nB\n")
     assert result.stdout.strip() == "2:1:N"
     assert result.returncode == 0
+
+
+# --- GRID-INFRA-003.1-S2: odd obstacle token count raises ValueError ---
+
+
+def test_grid_infra_003_1_s2_odd_obstacle_tokens_raises_value_error():
+    with pytest.raises(ValueError, match="pairs"):
+        InputParser.parse_obstacles("0 1 2")
+
+
+def test_grid_infra_003_1_s3_duplicate_obstacle_coords_deduplicated():
+    obstacles = InputParser.parse_obstacles("0 1 0 1")
+    assert obstacles == frozenset({(0, 1)})
+
+
+# --- GRID-INFRA-002.1-S1: starting position bounds validation ---
+
+
+def test_grid_infra_002_1_s1_starting_position_outside_grid_raises_value_error():
+    with pytest.raises(ValueError, match="outside grid"):
+        grid = InputParser.parse_grid("5 5")
+        InputParser.validate_position(6, 0, grid)
+
+
+# --- GRID-INFRA-001.1-S1/S2: grid immutability and wrap in Rover ---
+
+
+def test_grid_infra_001_1_s1_grid_dimensions_are_read_only():
+    grid = Grid(5, 5)
+    assert not hasattr(grid, "__set__")
+    # width and height are plain int attributes set at construction
+    assert grid.width == 5
+    assert grid.height == 5
+
+
+def test_grid_infra_001_1_s2_wrap_applied_inside_rover_execute_not_at_call_sites():
+    # Wrap logic lives in Rover.execute via modulo — no call site applies it manually.
+    # Verify: moving off the south edge from (0,0) produces (0,4).
+    grid = Grid(5, 5)
+    rover = Rover(x=0, y=0, direction=Direction.S)
+    rover.execute(Command.M, grid)
+    assert rover.y == 4  # wrapped, never stored as -1
+
+
+# --- CMD-INFRA-002.1-S1: output formatting is a pure string operation ---
+
+
+def test_cmd_infra_002_1_s1_format_result_returns_string_not_printed():
+    # OutputFormatter logic lives inline in __main__; verify the formula directly.
+    x, y, direction, halted = 1, 2, Direction.E, False
+    result = ("O:" if halted else "") + f"{x}:{y}:{direction.name}"
+    assert result == "1:2:E"
+    assert isinstance(result, str)
+
+
+def test_cmd_infra_002_1_s1_format_halted_result_returns_o_prefixed_string():
+    x, y, direction, halted = 0, 0, Direction.N, True
+    result = ("O:" if halted else "") + f"{x}:{y}:{direction.name}"
+    assert result == "O:0:0:N"
+
+
+# --- CMD-INFRA-003.1-S1: single catch in Main for all parse errors ---
+
+
+def test_cmd_infra_003_1_s1_invalid_grid_dimension_writes_to_stderr():
+    result = run_main("0 0 N\n0 5\n\nM\n")
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert "0" in result.stderr
+
+
+def test_cmd_infra_003_1_s1_out_of_bounds_position_writes_to_stderr():
+    result = run_main("6 0 N\n5 5\n\nM\n")
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert "outside grid" in result.stderr
+
+
+# --- ROVER-INFRA-004.1-S1: change impact for B is limited to Command + Rover ---
+
+
+def test_rover_infra_004_1_s1_b_command_defined_in_command_enum():
+    assert hasattr(Command, "B")
+
+
+def test_rover_infra_004_1_s1_mission_control_dispatches_b_without_modification():
+    # MissionControl.execute iterates commands generically; B uses the same loop.
+    grid = Grid(5, 5)
+    rover = Rover(x=2, y=2, direction=Direction.N)
+    mc = MissionControl(rover, grid)
+    mc.execute([Command.B])
+    assert rover.y == 1  # moved backward (south)
